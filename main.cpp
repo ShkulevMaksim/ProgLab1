@@ -1,55 +1,71 @@
 #include <iostream>
-#include <cstdlib>
 #include <vector>
+#include <cstdio>
 
-using namespace std;
 struct Book
 {
     int pages_count;
-    char* title;
-
+    std::string title;
     Book(){
-        pages_count = 0;
-        title = nullptr;
-    };
-    ~Book(){delete(title);};
+        pages_count=0;
+        title=" ";
+    }
 };
 
-void search(char* file_name, char* book_title){
+void save_to_file(const char *filename, std::vector<Book>::iterator it, int book_count){
+    FILE *file_write = fopen(filename,"wb");
+        if(!file_write){
+            std::cout<<"Error opening file!"<<std::endl;
 
-}
-void save(char* file_name){
-
-
-}
-
-void fill_array(vector<Book> books){
-    int count;
-    Book b;
-    cin >> count;
-    for (int i=0; i<count;i++){
-        cout<<"title "<< endl;
-        cin >> b.title;
-        cin >> b.pages_count;
-        books.emplace_back(b);
+        }
+    for(int i=0;i<book_count;i++){
+        fwrite(&*it,sizeof(Book),1,file_write);
+        ++it;
     }
-
+    fclose(file_write);
 }
+
+void search_in_file(const char *filename,const std::string& book_name){
+    FILE *file_read = fopen(filename,"rb");
+    if(!file_read){
+        std::cout<<"Error opening file!"<<std::endl;
+    }
+    Book buf;
+
+    while(!feof(file_read)){
+    fread(&buf,sizeof(Book),1,file_read);
+    if(buf.title == book_name){
+        std::cout<<"Successfully found a book with name:"<<buf.title<<" and it has "<<buf.pages_count<<"pages. "<<std::endl;
+    }
+}
+    fclose(file_read);
+}
+
 int main(int argc, char* argv[])
 {
-    cout<<argc<<endl;
-    vector<Book> books;
+    if(argc==2)
+    {
+    std::vector<Book> books;
+    Book b;
+    int number_of_books;
+    std::cout<<"Enter number of books: "<<std::endl;
+    std::cin>>number_of_books;
 
-    fill_array(books);
-
-    if (argc ==2){
-
-        save(argv[2]);
+    for(int i=0;i<number_of_books;i++){
+        std::cout<<"Enter number of pages: "<<std::endl;
+        std::cin>>b.pages_count;
+        std::cout<<"Enter title: "<<std::endl;
+        std::cin>>b.title;
+        books.push_back(b);
     }
-    if (argc == 3){
-        search(argv[2],argv[3]);
+    save_to_file(argv[1],books.begin(),books.size());
     }
-   system("pause");
+    if(argc==3){
+        search_in_file(argv[1],argv[2]);
+    }
+    if(argc>3){
+        std::cout<<"There must be 1 or 2 arguments: <File name> to fill existing file with books of <File name> <Book title> to search a book in a file by its title"<<std::endl;
+    }
    return 0;
 
 }
